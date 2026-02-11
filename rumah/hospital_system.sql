@@ -1,310 +1,155 @@
--- ============================================
--- Hospital Information System Database
--- ============================================
+-- Buat database
+CREATE DATABASE IF NOT EXISTS hospital_db;
 
--- Create database
-CREATE DATABASE IF NOT EXISTS hospital_system;
+USE hospital_db;
 
-USE hospital_system;
-
--- ============================================
--- Table: admins
--- ============================================
-CREATE TABLE IF NOT EXISTS admins (
+-- Tabel Admin
+CREATE TABLE admin (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
-    full_name VARCHAR(100) NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
+    nama_lengkap VARCHAR(100) NOT NULL,
+    email VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
--- ============================================
--- Table: users
--- ============================================
-CREATE TABLE IF NOT EXISTS users (
+-- Tabel Pasien (User)
+CREATE TABLE pasien (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    nik VARCHAR(20) UNIQUE NOT NULL,
+    nama_lengkap VARCHAR(100) NOT NULL,
+    tanggal_lahir DATE NOT NULL,
+    jenis_kelamin ENUM('Laki-laki', 'Perempuan') NOT NULL,
+    alamat TEXT NOT NULL,
+    no_telepon VARCHAR(15) NOT NULL,
+    email VARCHAR(100),
     username VARCHAR(50) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
--- ============================================
--- Table: patients
--- ============================================
-CREATE TABLE IF NOT EXISTS patients (
+-- Tabel Pengumuman
+CREATE TABLE pengumuman (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT UNIQUE NOT NULL,
-    medical_record_number VARCHAR(20) UNIQUE NOT NULL,
-    full_name VARCHAR(100) NOT NULL,
-    date_of_birth DATE NOT NULL,
-    gender ENUM('male', 'female') NOT NULL,
-    phone VARCHAR(20) NOT NULL,
-    address TEXT NOT NULL,
-    emergency_contact_name VARCHAR(100),
-    emergency_contact_phone VARCHAR(20),
-    blood_type ENUM(
-        'A+',
-        'A-',
-        'B+',
-        'B-',
-        'AB+',
-        'AB-',
-        'O+',
-        'O-'
-    ),
-    allergies TEXT,
-    medical_history TEXT,
+    judul VARCHAR(200) NOT NULL,
+    isi TEXT NOT NULL,
+    tanggal DATE NOT NULL,
+    admin_id INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
+    FOREIGN KEY (admin_id) REFERENCES admin (id) ON DELETE CASCADE
+);
 
--- ============================================
--- Table: announcements
--- ============================================
-CREATE TABLE IF NOT EXISTS announcements (
+-- Tabel Jadwal Konsultasi
+CREATE TABLE jadwal_konsultasi (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    title VARCHAR(200) NOT NULL,
-    content TEXT NOT NULL,
-    category ENUM(
-        'general',
-        'emergency',
-        'schedule',
-        'facility',
-        'health_tips'
-    ) DEFAULT 'general',
-    priority ENUM('low', 'medium', 'high') DEFAULT 'medium',
-    created_by INT NOT NULL,
-    is_active TINYINT(1) DEFAULT 1,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (created_by) REFERENCES admins (id) ON DELETE CASCADE
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
-
--- ============================================
--- Table: consultations
--- ============================================
-CREATE TABLE IF NOT EXISTS consultations (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    patient_id INT NOT NULL,
-    doctor_name VARCHAR(100) NOT NULL,
-    doctor_specialty VARCHAR(100) NOT NULL,
-    consultation_date DATE NOT NULL,
-    consultation_time TIME NOT NULL,
-    room_number VARCHAR(20),
+    pasien_id INT NOT NULL,
+    dokter VARCHAR(100) NOT NULL,
+    poli VARCHAR(50) NOT NULL,
+    tanggal DATE NOT NULL,
+    jam TIME NOT NULL,
+    keluhan TEXT,
     status ENUM(
-        'scheduled',
-        'completed',
-        'cancelled',
-        'rescheduled'
-    ) DEFAULT 'scheduled',
-    notes TEXT,
-    created_by INT,
+        'Terjadwal',
+        'Selesai',
+        'Dibatalkan'
+    ) DEFAULT 'Terjadwal',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (patient_id) REFERENCES patients (id) ON DELETE CASCADE,
-    FOREIGN KEY (created_by) REFERENCES admins (id) ON DELETE SET NULL
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
+    FOREIGN KEY (pasien_id) REFERENCES pasien (id) ON DELETE CASCADE
+);
 
--- ============================================
--- Insert Sample Data
--- ============================================
-
--- Insert Admin
--- Password: admin123
+-- Insert data admin default (password: admin123)
 INSERT INTO
-    admins (
+    admin (
         username,
         password,
-        full_name,
+        nama_lengkap,
         email
     )
 VALUES (
         'admin',
         '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
-        'Dr. Sarah Administrator',
-        'admin@hospital.com'
+        'Administrator Utama',
+        'admin@rs.com'
     );
 
--- Insert Users (Patients)
--- Password: patient123
+-- Insert data pasien contoh (password: pasien123)
 INSERT INTO
-    users (username, password, email)
-VALUES (
-        'john.doe',
-        '$2y$10$TKh8H1.PfQx37YgCzwiKb.KjNyWgaHb9cbcoQgdIVFlYg7B77UdFm',
-        'john.doe@email.com'
-    ),
-    (
-        'jane.smith',
-        '$2y$10$TKh8H1.PfQx37YgCzwiKb.KjNyWgaHb9cbcoQgdIVFlYg7B77UdFm',
-        'jane.smith@email.com'
-    );
-
--- Insert Patient Data
-INSERT INTO
-    patients (
-        user_id,
-        medical_record_number,
-        full_name,
-        date_of_birth,
-        gender,
-        phone,
-        address,
-        emergency_contact_name,
-        emergency_contact_phone,
-        blood_type,
-        allergies,
-        medical_history
+    pasien (
+        nik,
+        nama_lengkap,
+        tanggal_lahir,
+        jenis_kelamin,
+        alamat,
+        no_telepon,
+        email,
+        username,
+        password
     )
 VALUES (
-        1,
-        'MR-2024-001',
-        'John Doe',
-        '1985-05-15',
-        'male',
-        '081234567890',
+        '3273010101010001',
+        'Budi Santoso',
+        '1990-05-15',
+        'Laki-laki',
         'Jl. Merdeka No. 123, Jakarta',
-        'Jane Doe (Wife)',
-        '081234567891',
-        'O+',
-        'Penicillin',
-        'Hypertension since 2020'
+        '081234567890',
+        'budi@email.com',
+        'budi',
+        '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'
     ),
     (
-        2,
-        'MR-2024-002',
-        'Jane Smith',
-        '1990-08-22',
-        'female',
-        '082345678901',
-        'Jl. Sudirman No. 456, Jakarta',
-        'Robert Smith (Husband)',
-        '082345678902',
-        'A+',
-        'None',
-        'Diabetes Type 2'
+        '3273010202020002',
+        'Siti Aisyah',
+        '1985-08-22',
+        'Perempuan',
+        'Jl. Sudirman No. 45, Bandung',
+        '081298765432',
+        'siti@email.com',
+        'siti',
+        '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'
     );
 
--- Insert Announcements
+-- Insert data pengumuman contoh
 INSERT INTO
-    announcements (
-        title,
-        content,
-        category,
-        priority,
-        created_by,
-        is_active
-    )
+    pengumuman (judul, isi, tanggal, admin_id)
 VALUES (
-        'Hospital Operating Hours Update',
-        'Starting from February 15th, 2026, our hospital will extend operating hours to 24/7 for emergency services. Regular consultation hours remain 08:00 - 20:00.',
-        'schedule',
-        'high',
-        1,
+        'Peningkatan Pelayanan Kesehatan',
+        'Mulai tanggal 1 Januari 2024, rumah sakit akan menambah jam layanan hingga pukul 21.00 untuk meningkatkan akses pasien.',
+        '2024-01-10',
         1
     ),
     (
-        'New Cardiology Specialist Available',
-        'We are pleased to announce that Dr. Michael Chen, a renowned cardiology specialist, has joined our medical team. Appointments are now available.',
-        'general',
-        'medium',
-        1,
-        1
-    ),
-    (
-        'Health Tips: Preventing Dengue Fever',
-        'With the rainy season approaching, please take preventive measures against dengue fever. Eliminate standing water, use mosquito repellent, and seek immediate medical attention if you experience high fever.',
-        'health_tips',
-        'high',
-        1,
-        1
-    ),
-    (
-        'New MRI Facility Now Operational',
-        'Our state-of-the-art MRI facility is now fully operational. Please contact our radiology department for appointments and pricing information.',
-        'facility',
-        'medium',
-        1,
+        'Libur Nasional',
+        'Berdasarkan kalender nasional, rumah sakit akan tutup pada tanggal 17 Agustus 2024 untuk memperingati HUT RI ke-79.',
+        '2024-01-05',
         1
     );
 
--- Insert Consultation Schedules
+-- Insert data jadwal konsultasi contoh
 INSERT INTO
-    consultations (
-        patient_id,
-        doctor_name,
-        doctor_specialty,
-        consultation_date,
-        consultation_time,
-        room_number,
-        status,
-        notes,
-        created_by
+    jadwal_konsultasi (
+        pasien_id,
+        dokter,
+        poli,
+        tanggal,
+        jam,
+        keluhan,
+        status
     )
 VALUES (
         1,
-        'Dr. Michael Chen',
-        'Cardiology',
-        '2026-02-15',
-        '10:00:00',
-        'Room 301',
-        'scheduled',
-        'Routine heart checkup',
-        1
-    ),
-    (
-        1,
-        'Dr. Lisa Wong',
-        'Internal Medicine',
-        '2026-02-20',
-        '14:00:00',
-        'Room 205',
-        'scheduled',
-        'Follow-up hypertension treatment',
-        1
+        'dr. Rina Wijaya',
+        'Poli Umum',
+        '2024-01-20',
+        '09:00:00',
+        'Demam dan batuk sudah 3 hari',
+        'Terjadwal'
     ),
     (
         2,
-        'Dr. Robert Johnson',
-        'Endocrinology',
-        '2026-02-18',
-        '09:30:00',
-        'Room 402',
-        'scheduled',
-        'Diabetes management consultation',
-        1
-    ),
-    (
-        2,
-        'Dr. Amanda Lee',
-        'General Practice',
-        '2026-02-12',
-        '11:00:00',
-        'Room 101',
-        'completed',
-        'General health checkup completed',
-        1
+        'dr. Ahmad Fauzi',
+        'Poli Gigi',
+        '2024-01-22',
+        '10:30:00',
+        'Sakit gigi geraham',
+        'Terjadwal'
     );
-
--- ============================================
--- Create Indexes for Performance
--- ============================================
-CREATE INDEX idx_announcements_active ON announcements (is_active);
-
-CREATE INDEX idx_announcements_category ON announcements (category);
-
-CREATE INDEX idx_consultations_date ON consultations (consultation_date);
-
-CREATE INDEX idx_consultations_status ON consultations (status);
-
-CREATE INDEX idx_patients_mrn ON patients (medical_record_number);
-
--- ============================================
--- Success Message
--- ============================================
-SELECT 'Database hospital_system created successfully!' AS Message;
