@@ -15,9 +15,9 @@ define('DB_CHARSET', 'utf8mb4');
 
 // PDO options
 $options = [
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-    PDO::ATTR_EMULATE_PREPARES => false,
+    PDO::ATTR_EMULATE_PREPARES   => false,
 ];
 
 try {
@@ -32,8 +32,7 @@ try {
 /**
  * Helper function to execute prepared statements
  */
-function executeQuery($pdo, $sql, $params = [])
-{
+function executeQuery($pdo, $sql, $params = []) {
     try {
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
@@ -47,8 +46,7 @@ function executeQuery($pdo, $sql, $params = [])
 /**
  * Helper function to get single row
  */
-function getRow($pdo, $sql, $params = [])
-{
+function getRow($pdo, $sql, $params = []) {
     $stmt = executeQuery($pdo, $sql, $params);
     return $stmt ? $stmt->fetch() : false;
 }
@@ -56,8 +54,7 @@ function getRow($pdo, $sql, $params = [])
 /**
  * Helper function to get all rows
  */
-function getRows($pdo, $sql, $params = [])
-{
+function getRows($pdo, $sql, $params = []) {
     $stmt = executeQuery($pdo, $sql, $params);
     return $stmt ? $stmt->fetchAll() : false;
 }
@@ -65,8 +62,7 @@ function getRows($pdo, $sql, $params = [])
 /**
  * Helper function to insert and get last insert id
  */
-function insertAndGetId($pdo, $sql, $params = [])
-{
+function insertAndGetId($pdo, $sql, $params = []) {
     $result = executeQuery($pdo, $sql, $params);
     return $result ? $pdo->lastInsertId() : false;
 }
